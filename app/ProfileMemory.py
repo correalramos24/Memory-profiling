@@ -17,12 +17,13 @@ class ProfileMemory:
 
     def NewplotDataPLT(self, plot_format: str, plot_tota_avail: bool=False, 
                     plot_swap: bool = False, plot_legend: bool = False,
-                    save : str = None):
+                    save : str = None, output_units: str = None):
         
         import matplotlib.pyplot as plt
         import numpy as np
 
         plot_percentatge=False
+        scale_factor=1
 
         # Check inputs for the plot:
         if len(self.data_per_host) == 0:
@@ -32,6 +33,9 @@ class ProfileMemory:
             raise Exception(f"invalid plotting format selected {plot_format}")
         plot_percentatge = plot_format == 'perc'
         
+        if output_units is not None and output_units == "GiB":
+            self.units = "GiB"
+            scale_factor=2**20
 
         # Convert data & plot, taking care of plot_percentatge
         fig, ax = plt.subplots()
@@ -51,18 +55,26 @@ class ProfileMemory:
                         )
                     )
                 ax.plot(timing, main_mem_perc, label=host+" main mem. % used")
+                
+                if plot_swap:
+                    #TODO: Finish this
+                    pass
             else:
-                ax.plot(timing, main_mem_used, label=host+" main mem. used")
+                if scale_factor != 1:
+                    main_mem_used = list(map(lambda x : x/scale_factor, main_mem_used))
+                ax.plot(timing, main_mem_used, label=host+" main mem. used GiB")
 
-            if plot_swap:
-                swap_mem_used = list(map(lambda x: float(x.used), mem_per_host.swap_meminfo))
-                ax.plot(timing, swap_mem_used, label=host+" swap mem. used")
+                if plot_swap:
+                    swap_mem_used = list(map(lambda x: float(x.used), mem_per_host.swap_meminfo))
+                    ax.plot(timing, swap_mem_used, label=host+" swap mem. used")
+                    if plot_tota_avail:
+                        swap_mem_total = list(map(lambda x: float(x.total), mem_per_host.swap_meminfo))
+                        ax.plot(timing, swap_mem_total, label=host+" total swap mem.")
+
                 if plot_tota_avail:
-                    swap_mem_total = list(map(lambda x: float(x.total), mem_per_host.swap_meminfo))
-                    ax.plot(timing, swap_mem_total, label=host+" total swap mem.")
-
-            if plot_tota_avail:
-                ax.plot(timing, main_mem_total, label=host+" total main mem.")                    
+                    if scale_factor != 1:
+                        main_mem_total = list(map(lambda x : x/scale_factor, main_mem_total))
+                    ax.plot(timing, main_mem_total, label=host+" total main mem.")                    
 
 
         # Complete the plot & show or store:
@@ -87,7 +99,7 @@ class ProfileMemory:
         return self.sampling_time
 
     @staticmethod
-    def __parsefile__(file_name) -> MemTrace:
+    def __parsefile__(file_name, file_pattern="-mem.log") -> MemTrace:
         hostName = file_name.split("-mem.log")[0]
         ret = MemTrace(hostName, [], [])
         print(f"Parsing {file_name} ...", end="")
