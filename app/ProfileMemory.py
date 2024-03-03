@@ -15,91 +15,71 @@ class ProfileMemory:
         else:
             self.data_per_host = memData
 
-    def plotDataPLT(self, plot_swap: bool = False, save_name: str = None, 
-                    plot_total: bool = True) -> None:
-
+    def NewplotDataPLT(self, plot_format: str, plot_tota_avail: bool=False, 
+                    plot_swap: bool = False, plot_legend: bool = False,
+                    save : str = None):
+        
         import matplotlib.pyplot as plt
         import numpy as np
-        
+
+        plot_percentatge=False
+
+        # Check inputs for the plot:
         if len(self.data_per_host) == 0:
-            print("Empty data, can't generate any plot :(")
+            raise Exception("Empty data, can't generate any plot")
+        
+        if plot_format != 'perc' and plot_format != 'amount':
+            raise Exception(f"invalid plotting format selected {plot_format}")
+        plot_percentatge = plot_format == 'perc'
+        
 
-        for k in self.data_per_host.values():
-            host = k.host
-            #print(f"Plotting {host} data...", end='')
+        # Convert data & plot, taking care of plot_percentatge
+        fig, ax = plt.subplots()
 
+        for mem_per_host in self.data_per_host.values():
+            host = mem_per_host.host
             samp_time = self.getSamplingTime()
-            main_mem_used = list(map(lambda x: float(x.used), k.main_mem_info))
-            main_mem_total = list(map(lambda x: float(x.total), k.main_mem_info))
+
+            main_mem_used = list(map(lambda x: float(x.used), mem_per_host.main_mem_info))
+            main_mem_total = list(map(lambda x: float(x.total), mem_per_host.main_mem_info))
             timing = np.arange(0,  samp_time * len(main_mem_used), samp_time)
-
-            plt.plot(timing, main_mem_used, label="Used main mem @" + host)
-
-            if plot_swap:
-                swap_mem_total = list(map(lambda x: float(x.total), k.swap_meminfo))
-                swap_mem_used = list(map(lambda x: float(x.used), k.swap_meminfo))
-                plt.plot(timing, swap_mem_used, label="Used swap @" + host)
-                if plot_total:
-                    plt.plot(timing, swap_mem_total, label="Total swap @" + host)
-
-            if plot_total:
-                plt.plot(timing, main_mem_total, label="Total Main mem @ " + host)
-
-        
-        plt.ylabel(f"Memory [{self.units}]")
-        plt.xlabel("Time [s]]")
-        plt.title("Memory tracing")
-        #plt.legend()
-
-        if save_name is not None:
-            print(f"Saving plot to {save_name}")
-            plt.savefig(save_name + ".png")
-        else:
-            plt.show()
-
-    def plotPercentatgePLT(self, plot_swap: bool = False, save_name: str = None):
-        import matplotlib.pyplot as plt
-        import numpy as np
-        
-        if len(self.data_per_host) == 0:
-            print("Empty data, can't generate any plot :(")
-
-        for k in self.data_per_host.values():
-            host = k.host
-            #print(f"Plotting {host} data...", end='')
-
-            samp_time = self.getSamplingTime()
-            main_mem_used = map(lambda x: float(x.used), k.main_mem_info)
-            main_mem_total = map(lambda x: float(x.total), k.main_mem_info)
-            timing = np.arange(0,  samp_time * len(k.main_mem_info), samp_time)
-            main_mem_percentatge =  list(
-                map(
-                    lambda x : (float(x[0])/float(x[1]))*100,
-                    zip(main_mem_used, main_mem_total)
-                )
-            )
-            plt.plot(timing, main_mem_percentatge, label="% Used main mem @" + host)
-
-            if plot_swap:
-                swap_mem_total = map(lambda x: float(x.total), k.swap_meminfo)
-                swap_mem_used = map(lambda x: float(x.used), k.swap_meminfo)
-                main_mem_percentatge = list(
-                    map(
-                        lambda x : (float(x[0])/float(x[1]))*100,
-                        zip(swap_mem_used, swap_mem_total)
-                    )
-                )
-                plt.plot(timing, main_mem_percentatge, label="% Used swap mem @" + host)
             
-        plt.ylabel(f"Memory usage [%]")
-        plt.ylim(0,100)
-        plt.xlabel("Time [s]")
-        plt.title("Memory tracing")
-        #plt.legend()
+            if plot_percentatge:
+                main_mem_perc = list(map(
+                        lambda x : (float(x[0])/float(x[1]))*100,
+                        zip(main_mem_used, main_mem_total)
+                        )
+                    )
+                ax.plot(timing, main_mem_perc, label=host+" main mem. % used")
+            else:
+                ax.plot(timing, main_mem_used, label=host+" main mem. used")
 
-        if save_name is not None:
-            print(f"Saving plot to {save_name}")
-            plt.savefig(save_name + ".png")
+            if plot_swap:
+                swap_mem_used = list(map(lambda x: float(x.used), mem_per_host.swap_meminfo))
+                ax.plot(timing, swap_mem_used, label=host+" swap mem. used")
+                if plot_tota_avail:
+                    swap_mem_total = list(map(lambda x: float(x.total), mem_per_host.swap_meminfo))
+                    ax.plot(timing, swap_mem_total, label=host+" total swap mem.")
+
+            if plot_tota_avail:
+                ax.plot(timing, main_mem_total, label=host+" total main mem.")                    
+
+
+        # Complete the plot & show or store:
+        if plot_legend:
+            ax.legend()
+        if plot_percentatge:
+            ax.set_ylabel(f'Memory [%]')
+            ax.set_ylim(0,100)
+        else:
+            plt.ylabel(f'Memory [{self.units}]')
+
+        plt.xlabel(f'Time [s]')
+        plt.title('Memory sampling results')
+
+        if save is not None:
+            print(save+" generated")
+            fig.savefig(save)
         else:
             plt.show()
 

@@ -14,6 +14,7 @@ def main():
     parser.add_argument('--swap', required=False, action='store_true', help="Enable swap plotting")
     parser.add_argument('--total', required=False, action='store_true', help="Enable total memory available?")
     parser.add_argument('--percentatge', required=False, action='store_true', help="Plot % of usage")
+    parser.add_argument('--legend', required=False, action='store_true', help="Plot legend")
     args = parser.parse_args()
 
     # Parse & plot:
@@ -24,6 +25,7 @@ def main():
     swap   : bool = args.swap
     total  : bool = args.total
     percnt : bool = args.percentatge
+    legend : bool = args.legend
 
     if files is not None:
         pf_mem = ProfileMemory.from_files(files, sampl, args.u)
@@ -34,13 +36,9 @@ def main():
         print("You must either provide files or a folder (-f or --folder)")
         exit(1)
 
-    if not percnt:
-        print("Plotting data with units")
-        pf_mem.plotDataPLT( save_name=save, plot_total=total, 
-                            plot_swap=swap)
-    else:
-        print("Plotting data with %")
-        pf_mem.plotPercentatgePLT(swap, save)
+    plot_format='perc' if percnt else 'amount'
+    print("Generating the plot...")
+    pf_mem.NewplotDataPLT(plot_format, total, swap, legend, save)
 
 if __name__ == "__main__":
     main()
