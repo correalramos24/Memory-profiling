@@ -1,8 +1,6 @@
 #!/bin/python3
 
 import argparse
-from pathlib import Path
-import os
 from parsing import *
 from plot import *
 
