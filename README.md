@@ -9,6 +9,8 @@ The python script parses the output of the `free` linux command.
 
 ![alt text](examples/big.png)
 
+It's pending to implement a tracing library for generate data.
+
 ## Requeriments
 The **matplotlib** package is required to run this. **numpy** is also required. 
 You can install with the requirements file or do it manually.
