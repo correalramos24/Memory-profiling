@@ -1,4 +1,4 @@
-# MemoryTracing
+# Memory profiling
 
 A simple environment to trace and plot memory usage on a linux server cluster. 
 The python script parses the output of the `free` linux command.
