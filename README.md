@@ -3,6 +3,10 @@
 A simple environment to trace and plot memory usage on a linux server cluster. 
 The python script parses the output of the `free` linux command.
 
+>For clusters using SLURM scheduling system, you can use `slurm.sh <jobId>` 
+>for run the free command. If you don't have a parallel filesystem you need to
+>gather all the files
+
 ![alt text](examples/big.png)
 
 ## Requeriments
