@@ -21,8 +21,13 @@ def plot_plt_memory_results(results: list[MemoryResults], sample_time: int,
     Raises:
         Exception: Bad plot_format
     """
-    import matplotlib.pyplot as plt
-    import numpy as np
+    try:
+        import matplotlib.pyplot as plt
+        import numpy as np
+    except ImportError as e:
+        print(e)
+        print("Unable to find plotting modules! Check the README.md file")
+        exit(1)
     
     # Check configs for the plot:
     if plot_format != 'perc' and plot_format != 'amount':
