@@ -1,21 +1,24 @@
 
 from definitions import *
 
-# Memtrace tuples fields = host_info, main_mem_info, swap_info
-# Each of _mem_info contain total used free fileds
-
-
 def parse_mem_file(fPath, get_swap_info: bool = False, file_pattern="-mem.log"):
-    # Parse the hostname from the input file:
-    filename = fPath
-    if "/" in fPath:
-        filename = fPath.split('/')[-1]
-    
-    hostname = filename.split(file_pattern)[0]
+    """Parser for a file from free command.
+    Args:
+        fPath (str): _description_
+        get_swap_info (bool, optional): Parse swap also. Defaults to False.
+        file_pattern (str, optional): File name pattern for the hostname. 
+            Defaults to "-mem.log".
 
+    Returns:
+        MemoryResults: all the information from the fPath file.
+    """
+    
+    # 1. Generate hostname str:
+    filename = fPath.split('/')[-1] if "/" in fPath else fPath
+    hostname = filename.split(file_pattern)[0]
     results = MemoryResults(hostname, get_swap_info)
 
-    # Parse the file and accum data:
+    # 2. Parse the file and accum data:
     print(f"Parsing {fPath} file ...", end="")
     with open(fPath, mode='r') as mem_file:
         for line in mem_file.readlines():
@@ -24,6 +27,7 @@ def parse_mem_file(fPath, get_swap_info: bool = False, file_pattern="-mem.log"):
             if get_swap_info and "Swap: " in line:
                 results.append_swap_mem(tuple(line.strip().split()[1:4]))
 
+    # 3. Check integrity of the results
     results.check_integrity()
         
     print(f" DONE! Found {results.get_num_records()} records")

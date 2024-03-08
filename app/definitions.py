@@ -1,8 +1,11 @@
 
-
 class MemoryResults:
     """
-    Contain the info for the main memory and the swap memory.
+    Holds the info for the main memory and the swap memory.
+    Each memory record contains: 
+        0 : the total available in the system.
+        1 : the consumed memory in the system.
+        2 : the free memory in the system.
     """
 
     def __init__(self, hostname: str, with_swap_info: bool=False) -> None:
@@ -20,7 +23,8 @@ class MemoryResults:
         if self.swap_info is None: 
             return
         if len(self.swap_info) != len(self.main_info):
-            raise Exception("File corrupted, different swap and mem information")
+            raise Exception("File corrupted, different swap \
+                            and mem information")
 
     def get_num_records(self):
         return len(self.main_info)

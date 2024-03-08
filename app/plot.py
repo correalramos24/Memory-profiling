@@ -5,7 +5,22 @@ def plot_plt_memory_results(results: list[MemoryResults], sample_time: int,
                             plot_format : str, plot_legend : bool = False,
                             plot_total : bool = False, save_name : str = None, 
                             output_scale: int = 1, output_units: str = "KiB"):
+    """
+    Plot a MemoryResult sequence with Pyplot, one MemoryResults per host.
 
+    Args:
+        results (list[MemoryResults]): A sequence 
+        sample_time (int): Sample time of the input data
+        plot_format (str): Select to plot % or values.
+        plot_legend (bool, optional): Plot legend. Defaults to False.
+        plot_total (bool, optional): Plot the total memory available. Defaults to False.
+        save_name (str, optional): Save the plot with save_name. Defaults to None.
+        output_scale (int, optional): Divide factor for unit conversion. Defaults to 1.
+        output_units (str, optional): Define the units name for the y-axis. Defaults to "KiB".
+
+    Raises:
+        Exception: Bad plot_format
+    """
     import matplotlib.pyplot as plt
     import numpy as np
     
